@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User{
+  id    Int  @id @default(autoincrement())
+  name    String  
+  email    String @unique
+  password    String
+  otp        String?
+  socket_id  String?
+  user_agent  String?
+  resetToken  String?
+
+  messages    Message[]
+  rooms       UserRoom[]
+}
+
+model Message {
+  id          Int      @id @default(autoincrement())
+  content     String
+  createdAt   DateTime @default(now())
+  
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  
+  roomId      Int
+  room        Room     @relation(fields: [roomId], references: [id])
+}
+
+model UserRoom {
+  id        Int     @id @default(autoincrement())
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id])
+  
+  roomId    Int
+  room      Room    @relation(fields: [roomId], references: [id])
+
+  joinedAt  DateTime @default(now())
+}
+
+
+model Room {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  createdAt   DateTime @default(now())
+  isPrivate   Boolean  @default(false)
+  
+  messages    Message[]
+  users       UserRoom[]
+}
